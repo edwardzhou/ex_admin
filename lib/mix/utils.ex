@@ -17,9 +17,11 @@ defmodule Mix.ExAdmin.Utils do
   def web_path() do
     path1 = Path.join ["lib", to_string(Mix.Phoenix.otp_app()) <> "_web"]
     path2 = "web"
+    path3 = Path.join ["lib", to_string(Mix.Phoenix.otp_app())]
     cond do
       File.exists? path1 -> path1
       File.exists? path2 -> path2
+      File.exists? path3 -> path3
       true ->
         raise "Could not find web path '#{path1}'."
     end
