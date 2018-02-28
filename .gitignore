@@ -11,3 +11,6 @@ erl_crash.dump
 # swap
 [._]*.s[a-w][a-z]
 [._]s[a-w][a-z]
+
+/.vscode
+/.idea
