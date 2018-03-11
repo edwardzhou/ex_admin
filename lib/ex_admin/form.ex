@@ -1012,8 +1012,9 @@ defmodule ExAdmin.Form do
     |> datetime_select(field_name, Map.get(opts, :options, []))
   end
   def build_control(DateTime, resource, opts, model_name, field_name, _ext_name) do
+    options =  Map.get(opts, :options, []) |> Keyword.put(:type, DateTime)
     %{name: model_name, model: resource, id: model_name, class: "form-control"}
-    |> datetime_select(field_name, Map.get(opts, :options, []))
+    |> datetime_select(field_name, options)
   end
   def build_control(NaiveDateTime, resource, opts, model_name, field_name, _ext_name) do
     %{name: model_name, model: resource, id: model_name, class: "form-control"}
@@ -1170,7 +1171,6 @@ defmodule ExAdmin.Form do
           time_builder(b, opts)
         end
       end
-
     builder.(datetime_builder(form, field_name, date_value(value), time_value(value), opts))
   end
 
@@ -1215,7 +1215,12 @@ defmodule ExAdmin.Form do
     markup do
       b.(:hour, [])
       span ".time-separator"
-      b.(:min, [])
+
+      if Keyword.get(opts, :type) == DateTime do
+        b.(:minute, [])
+      else
+        b.(:min, [])
+      end
 
       if Keyword.get(opts, :sec) do
         markup do
@@ -1237,9 +1242,8 @@ defmodule ExAdmin.Form do
     do: %{hour: hour, min: min, sec: Map.get(map, "sec", 0), usec: Map.get(map, "usec", 0)}
   defp time_value(%{hour: hour, min: min} = map),
     do: %{hour: hour, min: min, sec: Map.get(map, :sec, 0), usec: Map.get(map, :usec, 0)}
-  defp time_value(%{hour: hour, minute: min} = map),
-    do: %{hour: hour, min: min, sec: Map.get(map, :second, 0), usec: elem(Map.get(map, :microsecond, {0,0}),0)}
-
+  defp time_value(%{hour: hour, minute: minute} = map),
+    do: %{hour: hour, minute: minute, sec: Map.get(map, :second, 0), usec: elem(Map.get(map, :microsecond, {0,0}),0)}
   defp time_value({_, {hour, min, sec, usec}}),
     do: %{hour: hour, min: min, sec: sec, usec: usec}
   defp time_value({hour, min, sec, usec}),
@@ -1280,7 +1284,6 @@ defmodule ExAdmin.Form do
   defp datetime_builder(form, field, date, time, parent) do
     id   = Keyword.get(parent, :id, id_from(form, field))
     name = Keyword.get(parent, :name, name_from(form, field))
-
     fn
       :year, opts when date != nil ->
         {year, _, _}  = :erlang.date()
@@ -1298,6 +1301,9 @@ defmodule ExAdmin.Form do
       :min, opts when time != nil ->
         {value, opts} = datetime_options(:min, @minsec, id, name, parent, time, opts)
         build_select(:datetime, :min, value, opts)
+      :minute, opts when time != nil ->
+        {value, opts} = datetime_options(:minute, @minsec, id, name, parent, time, opts)
+        build_select(:datetime, :minute, value, opts)
       :sec, opts when time != nil ->
         {value, opts} = datetime_options(:sec, @minsec, id, name, parent, time, opts)
         build_select(:datetime, :sec, value, opts)
